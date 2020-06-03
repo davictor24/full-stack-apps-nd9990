@@ -28,7 +28,7 @@ import {filterImageFromURL, deleteLocalFiles, checkURL} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   app.get( "/filteredimage", async ( req, res ) => {
-    let url: string = req.query.image_url.slice(2, -2);
+    let url: string = req.query.image_url;
     if (!checkURL(url)) {
       res.statusCode = 400;
       res.send("Invalid image url");
