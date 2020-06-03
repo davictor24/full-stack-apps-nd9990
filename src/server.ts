@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import {filterImageFromURL, deleteLocalFiles, checkURL} from './util/util';
 
 (async () => {
 
@@ -29,7 +29,14 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   app.get( "/filteredimage", async ( req, res ) => {
     let url: string = req.query.image_url.slice(2, -2);
-    res.send(url);
+    if (!checkURL(url)) {
+      res.statusCode = 400;
+      res.send("Invalid image url");
+    } else {
+      let imageData: string = await filterImageFromURL(url);
+      res.sendFile(imageData);
+      // deleteLocalFiles([]);
+    }
   } );
 
   //! END @TODO1
