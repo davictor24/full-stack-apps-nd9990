@@ -9,16 +9,20 @@ import Jimp = require('jimp');
 // RETURNS
 //    an absolute path to a filtered image locally saved file
 export async function filterImageFromURL(inputURL: string): Promise<string>{
-    return new Promise( async resolve => {
-        const photo = await Jimp.read(inputURL);
-        const outpath = '/tmp/filtered.'+Math.floor(Math.random() * 2000)+'.jpg';
-        await photo
-        .resize(256, 256) // resize
-        .quality(60) // set JPEG quality
-        .greyscale() // set greyscale
-        .write(__dirname+outpath, (img)=>{
-            resolve(__dirname+outpath);
-        });
+    return new Promise( async (resolve, reject) => {
+        try {
+            const photo = await Jimp.read(inputURL);
+            const outpath = '/tmp/filtered.'+Math.floor(Math.random() * 2000)+'.jpg';
+            await photo
+            .resize(256, 256) // resize
+            .quality(60) // set JPEG quality
+            .greyscale() // set greyscale
+            .write(__dirname+outpath, (img)=>{
+                resolve(__dirname+outpath);
+            });
+        } catch (err) {
+            reject(err);
+        }
     });
 }
 
@@ -34,6 +38,7 @@ export async function deleteLocalFiles(files:Array<string>){
 }
 
 // https://stackoverflow.com/questions/9714525/javascript-image-url-verify
+// Helper function to check if a URL points to an image
 export function checkURL(url: string) {
     return(url.match(/\.(jpeg|jpg|gif|png)$/) != null);
 }

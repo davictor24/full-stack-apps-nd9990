@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles, checkURL} from './util/util';
+import fs from 'fs';
 
 (async () => {
 
@@ -28,14 +29,24 @@ import {filterImageFromURL, deleteLocalFiles, checkURL} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   app.get( "/filteredimage", async ( req, res ) => {
-    let url: string = req.query.image_url.slice(2, -2);
-    if (!checkURL(url)) {
-      res.statusCode = 400;
-      res.send("Invalid image url");
-    } else {
-      let imageData: string = await filterImageFromURL(url);
-      res.sendFile(imageData);
-      // deleteLocalFiles([]);
+    const url: string = req.query.image_url;
+    if (!checkURL(url)) return res.status(400).end("Invalid image url");
+    let filteredPath: string;
+    try {
+      filteredPath = await filterImageFromURL(url);
+    } catch (err) {
+      return res.status(422).send("Image could not be processed");
+    }
+
+    const responseError: string = "An error occurred while preparing a response";
+    try {
+      res.status(200).sendFile(filteredPath, (err) => {
+        if (err) return res.status(500).send(responseError);
+        const photosDir: string = __dirname + "/util/tmp/";
+        return deleteLocalFiles(fs.readdirSync(photosDir).map(item => photosDir + item));
+      });
+    } catch (err) {
+      return res.status(500).send(responseError);
     }
   } );
 
